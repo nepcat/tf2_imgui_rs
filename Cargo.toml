@@ -30,7 +30,11 @@ c_str_macro = { version = "1.0.3" }
 cfg-if = { version = "1.0.0" }
 
 sdl2-sys = { version = "0.36.0" }
-imgui_rs = { path = "../imgui_rs/", features = ["freetype", "sdl2", "gl3"] }
+imgui_rs = { path = "./external/imgui_rs/", features = [
+    "freetype",
+    "sdl2",
+    "gl3",
+] }
 
 [target.'cfg(unix)'.dependencies]
 libc = { version = "0.2.155" }
