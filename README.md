@@ -23,6 +23,8 @@ TODO
 # Screenshots
 * OpenGL on Linux
 ![](./images/SDL2_OpenGL3.png)
+* DirectX9 on Windows
+![](./images/Win32_DirectX9.png)
 
 # TODOS
 * Fix color on Windows DX9
