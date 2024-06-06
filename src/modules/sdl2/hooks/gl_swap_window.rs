@@ -27,7 +27,9 @@ impl GLSwapWindow {
     pub unsafe fn find_original(library: &crate::utils::module::Module) -> Result<Self> {
         /* Credits: https://github.com/8dcc/tf2-cheat/blob/a8bffac0f3daaf1320d4f1ab4dd89af5b8b0e9b5/src/globals.c#L76 */
         /* dlsym skips ENDBR64 instruction (4 bytes)
-         * we are left with ff 25 16 ed 18 00
+         * we are left with
+         * ff 25
+         * 16 ed 18 00
          */
 
         let wrapper_ptr = library
@@ -96,6 +98,7 @@ unsafe fn try_our(window: *mut sdl2_sys::SDL_Window) -> anyhow::Result<()> {
                 window,
                 renderer: crate::imgui::renderer::sdl2::InitRenderer::OpenGL3 { original_context },
             })?;
+            log::debug!("Menu initialized succesfully!");
             Ok(imgui) as anyhow::Result<_>
         })
         .context("Failed to initialize ImGui")?;

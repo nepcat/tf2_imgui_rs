@@ -2,8 +2,8 @@
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    #[error("Null Error")]
-    Null(#[from] std::ffi::NulError),
+    #[error("Nul Error")]
+    Nul(#[from] std::ffi::NulError),
 }
 pub type Result<T> = std::result::Result<T, Error>;
 

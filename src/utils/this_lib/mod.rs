@@ -22,8 +22,8 @@ impl ThisLib {
 
         /* DisableThreadLibraryCalls on windows without static crt */
         #[cfg(all(target_os = "windows", not(target_feature = "crt-static")))]
-        ::windows::Win32::System::LibraryLoader::DisableThreadLibraryCalls(os_init.instance)
-            .context("Failed to disable thread library calls")?;
+        let disabled_thread_library_calls =
+            ::windows::Win32::System::LibraryLoader::DisableThreadLibraryCalls(os_init.instance);
 
         /* Initialize console on windows developer build */
         #[cfg(all(target_os = "windows", any(debug_assertions, feature = "developer")))]
@@ -43,6 +43,22 @@ impl ThisLib {
             .context("Failed to intialize logger")?;
         log::debug!("Logger initialized succesfully!");
 
+        /* Output windows related stuff */
+        #[cfg(target_os = "windows")]
+        {
+            #[cfg(not(target_feature = "crt-static"))]
+            if let Err(error) = disabled_thread_library_calls {
+                log::error!(
+                    "Failed to DisableThreadLibraryCalls(), error: {:#?}",
+                    anyhow::anyhow!(error)
+                );
+            }
+            #[cfg(any(debug_assertions, feature = "developer"))]
+            {
+                log::debug!("Console type {:?}", os_init.we_initialized_console);
+            }
+        }
+
         /* Get modules */
         let modules = crate::modules::Modules::get().context("Failed to get modules")?;
         log::debug!("Got modules succesfully!");
@@ -57,7 +73,13 @@ impl ThisLib {
         log::debug!("Hooks are initialized succesfully!");
 
         /* Print some debug information */
-        log::debug!("SteamClient {:#?}", modules.sdl2.hooks);
+        #[cfg(target_os = "linux")]
+        log::debug!("SDL2 {:#?}", modules.sdl2.hooks);
+        #[cfg(target_os = "windows")]
+        {
+            log::debug!("D3D9 {:#?}", modules.d3d9.hooks);
+            log::debug!("TF2 {:#?}", modules.tf2.hooks);
+        }
 
         Ok(Self { _os: os_init })
     }

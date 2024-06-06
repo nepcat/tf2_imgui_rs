@@ -39,7 +39,7 @@ impl OpenGL3 {
         if our_context.is_null() {
             return Err(Error::CreateContext);
         }
-        /* Destructor to free our SDL OpenGL context in-case we fail */
+        /* Destructor to free our SDL OpenGL context in case we fail */
         let our_context_lock_guard = scopeguard::guard(our_context, |our_context| {
             sdl2_sys::SDL_GL_DeleteContext(our_context);
         });
@@ -48,7 +48,7 @@ impl OpenGL3 {
         if !imgui_rs::ImGui_ImplSDL2_InitForOpenGL(window as _, our_context as _) {
             return Err(Error::ImplSDL2OpenGL);
         }
-        /* Destructor to shutdown our impl SDL2 GL in-case we fail */
+        /* Destructor to shutdown our impl SDL2 GL in case we fail */
         let our_impl_sdl2_lock_guard = scopeguard::guard((), |_| {
             imgui_rs::ImGui_ImplSDL2_Shutdown();
         });
@@ -57,7 +57,7 @@ impl OpenGL3 {
         if !imgui_rs::ImGui_ImplOpenGL3_Init(core::ptr::null_mut()) {
             return Err(Error::ImplSDL2OpenGL);
         }
-        /* Destructor to shutdown our impl OpenGL3 in-case we fail */
+        /* Destructor to shutdown our impl OpenGL3 in case we fail */
         let our_impl_opengl3_lock_guard = scopeguard::guard((), |_| {
             imgui_rs::ImGui_ImplOpenGL3_Shutdown();
         });

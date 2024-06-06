@@ -1,3 +1,5 @@
+#![feature(let_chains)]
+
 pub mod globals;
 pub mod imgui;
 pub mod menu;
@@ -6,8 +8,12 @@ pub mod utils;
 
 /* Check if platform is supported
  * Currently supported platforms are:
- * Linux x86_64 */
-#[cfg(not(all(target_os = "linux", target_arch = "x86_64")))]
+ * Linux x86_64
+ * Windows x86_64 */
+#[cfg(not(any(
+    all(target_os = "linux", target_arch = "x86_64"),
+    all(target_os = "windows", target_arch = "x86_64")
+)))]
 compile_error!("Unsupported platform");
 
 static mut THIS_LIBRARY: parking_lot::Mutex<Option<crate::utils::this_lib::ThisLib>> =
@@ -31,6 +37,52 @@ unsafe fn constructor() {
     if let Err(error) = try_init(os_init) {
         eprintln!("Failed to init: {:?}", error);
     }
+}
+
+#[cfg(target_os = "windows")]
+#[no_mangle]
+unsafe extern "system" fn DllMain(
+    instance: windows::Win32::Foundation::HMODULE,
+    reason: u32,
+    _reserved: *const std::os::raw::c_void,
+) -> windows::Win32::Foundation::BOOL {
+    eprintln!("{APPLICATION_NAME} DllMain called, reason {reason:?}!");
+    match reason {
+        windows::Win32::System::SystemServices::DLL_PROCESS_ATTACH => {
+            let os_init = utils::this_lib::windows::Windows {
+                instance,
+                ..Default::default()
+            };
+            if let Err(error) = try_init(os_init) {
+                let fmt_error = format!("Failed to init: {:?}", anyhow::anyhow!(error));
+                eprintln!("{fmt_error}");
+                let _ = crate::utils::windows::message_box::message_box(
+                    Default::default(),
+                    fmt_error,
+                    APPLICATION_NAME,
+                    windows::Win32::UI::WindowsAndMessaging::MB_OK
+                        | windows::Win32::UI::WindowsAndMessaging::MB_ICONERROR,
+                );
+                return false.into();
+            }
+        }
+        windows::Win32::System::SystemServices::DLL_PROCESS_DETACH => {
+            if let Err(error) = try_destroy() {
+                let fmt_error = format!("Failed to destroy: {:?}", anyhow::anyhow!(error));
+                eprintln!("{fmt_error}");
+                let _ = crate::utils::windows::message_box::message_box(
+                    Default::default(),
+                    fmt_error,
+                    APPLICATION_NAME,
+                    windows::Win32::UI::WindowsAndMessaging::MB_OK
+                        | windows::Win32::UI::WindowsAndMessaging::MB_ICONERROR,
+                );
+                return false.into();
+            }
+        }
+        _ => {}
+    }
+    true.into()
 }
 
 unsafe fn try_init(os_init: utils::this_lib::OsInit) -> anyhow::Result<()> {

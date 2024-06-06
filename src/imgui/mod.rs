@@ -39,8 +39,8 @@ impl ImGui {
         if imgui_context.is_null() {
             return Err(Error::Context);
         }
-        /* Destructor to free imgui context in-case we fail */
-        let our_imgui_context_lock_guard = scopeguard::guard(imgui_context, |imgui_context| {
+        /* Destructor to free imgui context in case we fail */
+        let _our_imgui_context_lock_guard = scopeguard::guard(imgui_context, |imgui_context| {
             imgui_rs::ImGui::DestroyContext(imgui_context);
         });
 
@@ -63,7 +63,7 @@ impl ImGui {
         let renderer = renderer::Renderer::init(init_renderer)?;
 
         log::debug!("ImGui for {renderer:#?} initialized succesfully!");
-        std::mem::forget(our_imgui_context_lock_guard);
+        std::mem::forget(_our_imgui_context_lock_guard);
         Ok(Self {
             context: imgui_context,
             menu: Default::default(),
@@ -76,19 +76,33 @@ impl ImGui {
     }
 
     pub unsafe fn render(&self) {
-        /* Set renderer context */
+        /* Fix colors
+         * On linux its done by using our own GL context for imgui
+         * On windows its done by modifing D3D9 values,
+         * see imgui/renderer/win32/directx9.rs's Colors struct */
         match &self.renderer {
+            #[cfg(target_os = "linux")]
             renderer::Renderer::SDL2(sdl2) => match sdl2 {
-                renderer::sdl2::SDL2::OpenGL3(opengl3) => opengl3.set_context(true),
+                renderer::sdl2::SDL2::OpenGL3(opengl3) => {
+                    opengl3.set_context(true);
+                }
             },
+            _ => {}
         };
         /* Set ImGui context so game doesn't fuck up when switching render threads! */
         self.set_current_context();
 
         /* Prepare new renderer frame */
         match &self.renderer {
+            #[cfg(target_os = "linux")]
             renderer::Renderer::SDL2(sdl2) => match sdl2 {
                 renderer::sdl2::SDL2::OpenGL3(opengl3) => opengl3.new_frame(),
+                /*#[cfg(target_os = "windows")]
+                renderer::sdl2::SDL2::DirectX9(directx9) => directx9.new_frame(),*/
+            },
+            #[cfg(target_os = "windows")]
+            renderer::Renderer::Win32(win32) => match win32 {
+                renderer::win32::Win32::DirectX9(directx9) => directx9.new_frame(),
             },
         };
         /* New ImGui frame */
@@ -106,16 +120,27 @@ impl ImGui {
         let imgui_draw_data = imgui_rs::ImGui::GetDrawData();
         /* Renderer end frame */
         match &self.renderer {
+            #[cfg(target_os = "linux")]
             renderer::Renderer::SDL2(sdl2) => match sdl2 {
                 renderer::sdl2::SDL2::OpenGL3(opengl3) => opengl3.end_frame(imgui_draw_data),
+                /*#[cfg(target_os = "windows")]
+                renderer::sdl2::SDL2::DirectX9(directx9) => directx9.end_frame(imgui_draw_data),*/
+            },
+            #[cfg(target_os = "windows")]
+            renderer::Renderer::Win32(win32) => match win32 {
+                renderer::win32::Win32::DirectX9(directx9) => directx9.end_frame(imgui_draw_data),
             },
         };
 
-        /* Restore renderer context */
+        /* Restore old colors */
         match &self.renderer {
+            #[cfg(target_os = "linux")]
             renderer::Renderer::SDL2(sdl2) => match sdl2 {
-                renderer::sdl2::SDL2::OpenGL3(opengl3) => opengl3.set_context(false),
+                renderer::sdl2::SDL2::OpenGL3(opengl3) => {
+                    opengl3.set_context(false);
+                }
             },
+            _ => {}
         };
     }
 

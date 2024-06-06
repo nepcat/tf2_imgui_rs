@@ -70,13 +70,12 @@ impl Module {
         #[cfg(target_os = "windows")]
         return Ok({
             let result = windows::Win32::System::LibraryLoader::GetProcAddress(
-                *handle,
+                self.handle,
                 windows::core::PCSTR(name),
-            )?;
-            result
+            );
+            result.map(|some| some as usize)
         });
     }
-
     // TODO: Function to get symbol using std::ffi::CStr
 }
 

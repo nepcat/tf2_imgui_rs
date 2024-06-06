@@ -19,7 +19,7 @@ impl Map {
         std::slice::from_raw_parts_mut(self.start as *mut u8, self.size)
     }
 
-    /*pub unsafe fn find_address_by_pattern(&self, pattern: &patterns::Pattern) -> Option<usize> {
+    pub unsafe fn find_address_by_pattern(&self, pattern: &patterns::Pattern) -> Option<usize> {
         let slice = self.get_memory_slice();
         let mut iterator = pattern.matches(slice);
 
@@ -37,7 +37,7 @@ impl Map {
         }
 
         result
-    }*/
+    }
 
     #[cfg(target_os = "windows")]
     pub fn get_from_module(module: &super::Module) -> windows::core::Result<Self> {
