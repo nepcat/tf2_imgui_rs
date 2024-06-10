@@ -11,7 +11,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build_ubuntu:
+  clippy_check_linux:
     runs-on: ubuntu-22.04
 
     steps:
@@ -40,17 +40,52 @@ jobs:
       with:
         command: clippy
         toolchain: nightly
+        
+  build_optimized_linux:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout 
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Write optimized config.toml
+      uses: DamianReeves/write-file-action@v1.3
+      with:
+        path: ./optimized_config.toml
+        write-mode: overwrite
+        contents: |
+          [profile.release]
+          strip = true
+          codegen-units = 1
+          lto = true
+
+    - name: Install latest nightly
+      uses: actions-rs/toolchain@v1.0.6
+      with:
+        toolchain: nightly
+
+    - name: Install and Cache apt packages
+      uses: awalsh128/cache-apt-pkgs-action@v1.4.2
+      with:
+        packages: libsdl2-dev libsdl2-2.0-0 clang libfreetype-dev pkg-config
+        
+    - name: Rust Cache
+      uses: Swatinem/rust-cache@v2.7.3
+      with:
+        cache-all-crates: "true"
     
     - name: Compile (Release)
       uses: actions-rs/cargo@v1.0.1
       with:
         command: build
         toolchain: nightly
-        args: --verbose --release
+        args: --verbose --release --config ./optimized_config.toml
 
     - name: Upload result
       uses: actions/upload-artifact@v4.3.3
       with:
-        name: "X86_64 linux library"
+        name: "X86_64 Linux GNU library"
         path: "target/release/libtf2_imgui_rs.so"
         retention-days: 0
