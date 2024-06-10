@@ -51,7 +51,7 @@ jobs:
     - name: Upload result
       uses: actions/upload-artifact@v4.3.3
       with:
-        name: "X86_64 GNU/Linux library"
+        name: "X86_64 Linux GNU library"
         path: "target/release/libtf2_imgui_rs.so"
         retention-days: 0
         
