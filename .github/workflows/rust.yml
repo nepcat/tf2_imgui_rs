@@ -50,21 +50,21 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Install latest nightly
-      uses: actions-rs/toolchain@v1.0.6
-      with:
-        toolchain: nightly
-
     - name: Write optimized config.toml
       uses: DamianReeves/write-file-action@v1.3
       with:
-        path: ${{ runner.home }}/.cargo/config.toml
+        path: ./optimized_config.toml
         write-mode: overwrite
         contents: |
           [profile.release]
           strip = true
           codegen-units = 1
           lto = true
+
+    - name: Install latest nightly
+      uses: actions-rs/toolchain@v1.0.6
+      with:
+        toolchain: nightly
 
     - name: Install and Cache apt packages
       uses: awalsh128/cache-apt-pkgs-action@v1.4.2
@@ -81,7 +81,7 @@ jobs:
       with:
         command: build
         toolchain: nightly
-        args: --verbose --release
+        args: --verbose --release --config ./optimized_config.toml
 
     - name: Upload result
       uses: actions/upload-artifact@v4.3.3
