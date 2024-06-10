@@ -29,7 +29,10 @@ jobs:
       uses: awalsh128/cache-apt-pkgs-action@v1.4.2
       with:
         packages: libsdl2-dev libsdl2-2.0-0 clang libfreetype-dev pkg-config
-
+        
+    - name: Rust Cache
+      uses: Swatinem/rust-cache@v2.7.3
+      
     - name: Clippy check
       uses: actions-rs/cargo@v1.0.1
       with:
