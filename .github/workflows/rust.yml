@@ -54,3 +54,47 @@ jobs:
         name: "X86_64 linux library"
         path: "target/release/libtf2_imgui_rs.so"
         retention-days: 0
+        
+  build_windows:
+    runs-on: windows-2022
+
+    steps:
+    - name: Checkout 
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install latest nightly
+      uses: actions-rs/toolchain@v1.0.6
+      with:
+        toolchain: nightly
+
+    - name: Add clang path to $PATH env
+      shell: bash
+      if: runner.os == 'Windows'
+      run: echo "PATH=$PATH:C:\msys64\mingw64\bin" >> $GITHUB_ENV
+
+    - name: Rust Cache
+      uses: Swatinem/rust-cache@v2.7.3
+      with:
+        cache-all-crates: "true"
+
+    - name: Clippy check
+      uses: actions-rs/cargo@v1.0.1
+      with:
+        command: clippy
+        toolchain: nightly
+    
+    - name: Compile (Release)
+      uses: actions-rs/cargo@v1.0.1
+      with:
+        command: build
+        toolchain: nightly
+        args: --verbose --release
+
+    - name: Upload result
+      uses: actions/upload-artifact@v4.3.3
+      with:
+        name: "X86_64 Windows MSVC library"
+        path: "target/release/tf2_imgui_rs.dll"
+        retention-days: 0
