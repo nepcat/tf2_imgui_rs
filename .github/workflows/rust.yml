@@ -32,6 +32,8 @@ jobs:
         
     - name: Rust Cache
       uses: Swatinem/rust-cache@v2.7.3
+      with:
+        cache-all-crates: "true"
       
     - name: Clippy check
       uses: actions-rs/cargo@v1.0.1
