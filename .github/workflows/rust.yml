@@ -58,7 +58,7 @@ jobs:
     - name: Write optimized config.toml
       uses: DamianReeves/write-file-action@v1.3
       with:
-        path: ${{ env.home}}/.cargo/config.toml
+        path: ${{ runner.home }}/.cargo/config.toml
         write-mode: overwrite
         contents: |
           [profile.release]
