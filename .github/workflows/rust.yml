@@ -1,0 +1,51 @@
+name: Rust
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build_ubuntu:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout 
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install latest nightly
+      uses: actions-rs/toolchain@v1.0.6
+      with:
+        toolchain: nightly
+
+    - name: Install and Cache apt packages
+      uses: awalsh128/cache-apt-pkgs-action@v1.4.2
+      with:
+        packages: libsdl2-dev libsdl2-2.0-0 clang libfreetype-dev pkg-config
+
+    - name: Clippy check
+      uses: actions-rs/cargo@v1.0.1
+      with:
+        command: clippy
+        toolchain: nightly
+    
+    - name: Compile (Release)
+      uses: actions-rs/cargo@v1.0.1
+      with:
+        command: build
+        toolchain: nightly
+        args: --verbose --release
+
+    - name: Upload result
+      uses: actions/upload-artifact@v4.3.3
+      with:
+        name: "X86_64 linux library"
+        path: "target/release/libtf2_imgui_rs.so"
+        retention-days: 0
