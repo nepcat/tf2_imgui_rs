@@ -13,12 +13,15 @@ $ cargo build --release
 TODO
 
 # Dependencies
-* Freetype on Linux
+## Linux
+* Freetype
+* SDL2
+## All platforms
 * All listed dependencies from this [library](https://github.com/nepcat/imgui_rs?tab=readme-ov-file#dependencies)
 
 # Supported platforms
 * GNU/Linux x86_64
-* Windows x86_64
+* Windows x86_64 (only GNU, see [this](https://github.com/nepcat/imgui_rs/issues/1))
 
 # Screenshots
 * OpenGL on Linux
@@ -28,4 +31,5 @@ TODO
 
 # TODOS
 * Fix color on Windows DX9
+* Filter events on Window's WndProc hook
 * Add support for Vulkan renderer on both Linux and Windows

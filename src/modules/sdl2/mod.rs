@@ -5,7 +5,6 @@ pub mod hooks;
 #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
 pub static FILEPATH: &str = "libSDL2-2.0.so";
 #[cfg(all(target_os = "windows", target_arch = "x86_64"))]
-// pub static FILEPATH: &str = ".\\SDL2.dll";
 pub static FILEPATH: &str = ".\\bin\\x64\\SDL2.dll";
 
 #[derive(thiserror::Error, Debug)]
@@ -24,6 +23,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 pub struct SDL2 {
     library: crate::utils::module::Module,
     maps: Vec<crate::utils::module::maps::Map>,
+
     pub hooks: hooks::Hooks,
 }
 

@@ -39,8 +39,8 @@ impl PollEvent {
     pub unsafe fn find_original(library: &crate::utils::module::Module) -> Result<Self> {
         /* Credits: https://github.com/8dcc/tf2-cheat/blob/a8bffac0f3daaf1320d4f1ab4dd89af5b8b0e9b5/src/globals.c#L91 */
 
-        /* dlsym skips ENDBR64 instruction (4 bytes)
-         * Linux:
+        /* Linux:
+         * dlsym skips ENDBR64 instruction (4 bytes)
          * ff 25
          * 2e 68 19 00
          * Windows:
