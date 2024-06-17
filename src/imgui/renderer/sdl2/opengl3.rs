@@ -35,17 +35,19 @@ impl OpenGL3 {
         }
 
         /* Create our own SDL OpenGL context */
-        let our_context = sdl2_sys::SDL_GL_CreateContext(window);
-        if our_context.is_null() {
-            return Err(Error::CreateContext);
-        }
-        /* Destructor to free our SDL OpenGL context in case we fail */
-        let our_context_lock_guard = scopeguard::guard(our_context, |our_context| {
-            sdl2_sys::SDL_GL_DeleteContext(our_context);
-        });
+        let our_context = {
+            let our_context = sdl2_sys::SDL_GL_CreateContext(window);
+            if our_context.is_null() {
+                return Err(Error::CreateContext);
+            }
+            /* Destructor to free our SDL OpenGL context in case we fail */
+            scopeguard::guard(our_context, |our_context| {
+                sdl2_sys::SDL_GL_DeleteContext(our_context);
+            })
+        };
 
         /* Implement ImGui for SDL2 GL */
-        if !imgui_rs::ImGui_ImplSDL2_InitForOpenGL(window as _, our_context as _) {
+        if !imgui_rs::ImGui_ImplSDL2_InitForOpenGL(window as _, (*our_context) as _) {
             return Err(Error::ImplSDL2OpenGL);
         }
         /* Destructor to shutdown our impl SDL2 GL in case we fail */
@@ -62,12 +64,11 @@ impl OpenGL3 {
             imgui_rs::ImGui_ImplOpenGL3_Shutdown();
         });
 
-        std::mem::forget(our_impl_opengl3_lock_guard);
-        std::mem::forget(our_impl_sdl2_lock_guard);
-        std::mem::forget(our_context_lock_guard);
+        scopeguard::ScopeGuard::into_inner(our_impl_opengl3_lock_guard);
+        scopeguard::ScopeGuard::into_inner(our_impl_sdl2_lock_guard);
         Ok(Self {
             original_context,
-            our_context,
+            our_context: scopeguard::ScopeGuard::into_inner(our_context),
             window,
         })
     }

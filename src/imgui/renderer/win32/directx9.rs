@@ -51,8 +51,8 @@ impl DirectX9 {
             imgui_rs::ImGui_ImplDX9_Shutdown();
         });
 
-        std::mem::forget(our_impl_dx9_lock_guard);
-        std::mem::forget(our_impl_win32_lock_guard);
+        scopeguard::ScopeGuard::into_inner(our_impl_dx9_lock_guard);
+        scopeguard::ScopeGuard::into_inner(our_impl_win32_lock_guard);
         Ok(Self { window, device })
     }
 

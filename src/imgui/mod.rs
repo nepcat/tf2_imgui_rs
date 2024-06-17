@@ -35,14 +35,16 @@ unsafe impl Sync for ImGui {}
 impl ImGui {
     pub unsafe fn init(init_renderer: renderer::InitRenderer) -> Result<Self> {
         /* Create ImGui context */
-        let imgui_context = imgui_rs::ImGui::CreateContext(core::ptr::null_mut());
-        if imgui_context.is_null() {
-            return Err(Error::Context);
-        }
-        /* Destructor to free imgui context in case we fail */
-        let _our_imgui_context_lock_guard = scopeguard::guard(imgui_context, |imgui_context| {
-            imgui_rs::ImGui::DestroyContext(imgui_context);
-        });
+        let imgui_context = {
+            let imgui_context = imgui_rs::ImGui::CreateContext(core::ptr::null_mut());
+            if imgui_context.is_null() {
+                return Err(Error::Context);
+            }
+            /* Destructor to free imgui context in case we fail */
+            scopeguard::guard(imgui_context, |imgui_context| {
+                imgui_rs::ImGui::DestroyContext(imgui_context);
+            })
+        };
 
         /* Get ImGui IO */
         let Some(imgui_io) = imgui_rs::ImGui::GetIO().as_mut() else {
@@ -63,9 +65,8 @@ impl ImGui {
         let renderer = renderer::Renderer::init(init_renderer)?;
 
         log::debug!("ImGui for {renderer:#?} initialized succesfully!");
-        std::mem::forget(_our_imgui_context_lock_guard);
         Ok(Self {
-            context: imgui_context,
+            context: scopeguard::ScopeGuard::into_inner(imgui_context),
             menu: Default::default(),
             renderer,
         })
