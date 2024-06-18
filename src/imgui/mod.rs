@@ -1,7 +1,5 @@
 #![allow(clippy::missing_safety_doc)]
 
-use imgui_rs::root as imgui_rs;
-
 pub mod renderer;
 
 #[derive(thiserror::Error, Debug)]

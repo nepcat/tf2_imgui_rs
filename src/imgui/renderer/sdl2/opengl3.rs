@@ -1,5 +1,3 @@
-use imgui_rs::root as imgui_rs;
-
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("Failed to create context")]

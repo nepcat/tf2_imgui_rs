@@ -1,7 +1,5 @@
 #![allow(clippy::missing_safety_doc)]
 
-use imgui_rs::root as imgui_rs;
-
 #[derive(Debug, Default)]
 pub struct Menu {
     pub is_enabled: bool,

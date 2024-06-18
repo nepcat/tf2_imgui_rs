@@ -3,8 +3,6 @@
  * Because of this, we will not be able to get SDL_Window on SDL_PollEvent() hook
  * to initialize this renderer  */
 
-use imgui_rs::root as imgui_rs;
-
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("Invalid DX9 device")]
