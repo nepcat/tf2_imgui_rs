@@ -89,3 +89,49 @@ jobs:
         name: "X86_64 Linux GNU library"
         path: "target/release/libtf2_imgui_rs.so"
         retention-days: 0
+        
+  build_windows_gnu:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout 
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install latest nightly
+      uses: actions-rs/toolchain@v1.0.6
+      with:
+        toolchain: nightly
+        target: "x86_64-pc-windows-gnu"
+
+    - name: Install and Cache apt packages
+      uses: awalsh128/cache-apt-pkgs-action@v1.4.2
+      with:
+        packages: clang mingw-w64 mingw-w64-i686-dev gcc g++ clang-14 llvm-14-dev
+
+    - name: Rust Cache
+      uses: Swatinem/rust-cache@v2.7.3
+      with:
+        cache-all-crates: "true"
+
+    - name: Clippy check
+      uses: actions-rs/cargo@v1.0.1
+      with:
+        command: clippy
+        toolchain: nightly
+        args: --target=x86_64-pc-windows-gnu
+    
+    - name: Compile (Release)
+      uses: actions-rs/cargo@v1.0.1
+      with:
+        command: build
+        toolchain: nightly
+        args: --verbose --release --target=x86_64-pc-windows-gnu
+
+    - name: Upload result
+      uses: actions/upload-artifact@v4.3.3
+      with:
+        name: "X86_64 Windows GNU library"
+        path: "target/x86_64-pc-windows-gnu/release/tf2_imgui_rs.dll"
+        retention-days: 0
